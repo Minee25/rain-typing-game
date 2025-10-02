@@ -1,1 +1,1 @@
-# rain-typing-game
+# Rain Typing Game
