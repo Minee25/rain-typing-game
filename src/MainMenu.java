@@ -2,33 +2,43 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-class MainMenu extends JPanel {
-  PrettyButton startBtn = new PrettyButton("Start", new Color(37, 99, 235), new Color(29, 78, 216)).setFontSize(28);
-  PrettyButton optionBtn = new PrettyButton("Option", new Color(37, 99, 235), new Color(29, 78, 216)).setFontSize(28);
-  PrettyButton exitBtn = new PrettyButton("Exit", new Color(37, 99, 235), new Color(29, 78, 216)).setFontSize(28);
+class MainMenu extends JPanel { 
+  private GamePanel gamePanel; // อ้างอิงไปที่ GamePanel
+
+  ImageButton playButton = new ImageButton("play");
+  ImageButton howToPlay = new ImageButton("howtoplay");
+  ImageButton exitButton = new ImageButton("exit");
 
   Image bgImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/background.jpg").getImage();
 
-  public MainMenu() {
+  public MainMenu(GamePanel panel) {
+    this.gamePanel = panel; // รับ GamePanel มาด้วย
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-    // Click button for exit
-    exitBtn.addActionListener(e -> {
+    // Button to PLAY
+    playButton.addActionListener(e -> gamePanel.setState(GameState.PLAY));
+
+    // Button to HOW TO PLAY
+    howToPlay.addActionListener(e -> gamePanel.setState(GameState.OPTIONS));
+
+  
+    // Button to Exit
+    exitButton.addActionListener(e -> {
         System.exit(0);
       }
     );
 
     // Center
-    startBtn.setAlignmentX(CENTER_ALIGNMENT);
-    optionBtn.setAlignmentX(CENTER_ALIGNMENT);
-    exitBtn.setAlignmentX(CENTER_ALIGNMENT);
+    playButton.setAlignmentX(CENTER_ALIGNMENT);
+    howToPlay.setAlignmentX(CENTER_ALIGNMENT);
+    exitButton.setAlignmentX(CENTER_ALIGNMENT);
 
     add(Box.createVerticalGlue());
-    add(startBtn);
+    add(playButton);
     add(Box.createRigidArea(new Dimension(0, 10)));
-    add(optionBtn);
+    add(howToPlay);
     add(Box.createRigidArea(new Dimension(0, 10)));
-    add(exitBtn);
+    add(exitButton);
     add(Box.createVerticalGlue());
 
   }

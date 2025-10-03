@@ -12,6 +12,8 @@ public class RainTypingWindows extends JFrame {
     Image logo = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/logo64.png").getImage();
     setIconImage(logo);
 
-    add(new MainMenu());
+    GamePanel panel = new GamePanel();
+    add(panel);
+    panel.startGame();
   }
 }
