@@ -41,8 +41,6 @@ public class GamePanel extends JPanel implements Runnable {
     } else if (state == GameState.PLAY) {
       add(BorderLayout.CENTER, playScene);
       playScene.requestFocusInWindow();
-    } else if (state == GameState.OPTIONS) {
-      add(BorderLayout.CENTER, new JLabel("⚙ Options Page"));
     } else if (state == GameState.HOW_TO_PLAY) {
       add(BorderLayout.CENTER, howToPlay);
     } else if (state == GameState.GAMEOVER) {
@@ -50,7 +48,6 @@ public class GamePanel extends JPanel implements Runnable {
       add(BorderLayout.CENTER, gameOverScreen);
     }
   }
-
 
   public void startGame() {
     running = true;

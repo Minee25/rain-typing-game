@@ -19,8 +19,8 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
   private final Random random = new Random();
   private final Font thaiFont;
   private final java.util.List<String> wordList = new ArrayList<>();
-  private Double minSpeed = 1.0;
-  private Double maxSpeed = 1.2;
+  private double minSpeed = 1.0;
+  private double maxSpeed = 3.0;
   private int score = 0;
   private int missedWords = 0;
   private final int MAX_MISSED_WORDS = 5;
@@ -93,8 +93,8 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
     if (wordList.isEmpty())
       return;
     String w = wordList.get(random.nextInt(wordList.size()));
-    words.add(new Word(w, (int) random.nextDouble(Math.max(1, getWidth() - 100)), 0,
-        (int) (minSpeed + random.nextDouble(maxSpeed))));
+    double randomSpeed = minSpeed + random.nextDouble() * (maxSpeed - minSpeed);
+    words.add(new Word(w, (int) random.nextDouble(Math.max(1, getWidth() - 100)), 0, randomSpeed));
   }
 
   /** ลูปเกมหลัก */
@@ -123,7 +123,7 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
       }
 
       try {
-        Thread.sleep(5);
+        Thread.sleep(16);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
@@ -135,7 +135,7 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
     Iterator<Word> iterator = words.iterator();
     while (iterator.hasNext()) {
       Word word = iterator.next();
-      word.y += word.speed;
+      word.y += (int) word.speed;
       if (word.y > getHeight()) {
         iterator.remove();
         try {
@@ -254,9 +254,10 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
 
   static class Word {
     String text;
-    int x, y, speed;
+    int x, y;
+    double speed;
 
-    Word(String t, int x, int y, int s) {
+    Word(String t, int x, int y, double s) {
       this.text = t;
       this.x = x;
       this.y = y;
