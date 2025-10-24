@@ -2,37 +2,44 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-class MainMenu extends JPanel { 
-  private GamePanel gamePanel; // อ้างอิงไปที่ GamePanel
+class MainMenu extends JPanel {
+  private GamePanel gamePanel;
 
-  ImageButton playButton = new ImageButton("play");
-  ImageButton howToPlay = new ImageButton("howtoplay");
-  ImageButton exitButton = new ImageButton("exit");
+  ImageButton playButton = new ImageButton(ButtonType.START);
+  ImageButton howToPlay = new ImageButton(ButtonType.HOW_TO_PLAY);
+  ImageButton exitButton = new ImageButton(ButtonType.EXIT);
 
-  Image bgImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/background.jpg").getImage();
+  Image bgImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/background.jpg")
+      .getImage();
+  Image logoImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/banner.png")
+      .getImage();
+  JLabel logoLabel = new JLabel(new ImageIcon(logoImage));
 
   public MainMenu(GamePanel panel) {
-    this.gamePanel = panel; // รับ GamePanel มาด้วย
+    this.gamePanel = panel;
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-    // Button to PLAY
-    playButton.addActionListener(e -> gamePanel.setState(GameState.PLAY));
+    playButton.addActionListener(e -> {
+      gamePanel.setState(GameState.PLAY);
+      gamePanel.startPlayScene(); // เรียกเมธอดใหม่ใน GamePanel
+    });
 
-    // Button to HOW TO PLAY
-    howToPlay.addActionListener(e -> gamePanel.setState(GameState.OPTIONS));
+    howToPlay.addActionListener(e -> gamePanel.setState(GameState.HOW_TO_PLAY));
 
-  
     // Button to Exit
     exitButton.addActionListener(e -> {
-        System.exit(0);
-      }
-    );
+      System.exit(0);
+    });
 
     // Center
     playButton.setAlignmentX(CENTER_ALIGNMENT);
     howToPlay.setAlignmentX(CENTER_ALIGNMENT);
     exitButton.setAlignmentX(CENTER_ALIGNMENT);
+    logoLabel.setAlignmentX(CENTER_ALIGNMENT);
 
+    add(Box.createVerticalGlue());
+    add(logoLabel);
+    add(Box.createRigidArea(new Dimension(0, 20)));
     add(Box.createVerticalGlue());
     add(playButton);
     add(Box.createRigidArea(new Dimension(0, 10)));

@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 
 enum GameState {
-  MENU, PLAY, OPTIONS, GAMEOVER
+  MENU, PLAY, OPTIONS, HOW_TO_PLAY, GAMEOVER
 }
 
 public class GamePanel extends JPanel implements Runnable {
@@ -10,33 +10,47 @@ public class GamePanel extends JPanel implements Runnable {
   private boolean running = false;
   private GameState currentState = GameState.MENU;
 
-  private MainMenu menuPanel;
+  private MainMenu mainMenu;
+  private HowToPlay howToPlay;
+  private PlayScene playScene;
+  private GameOverScreen gameOverScreen;
 
   public GamePanel() {
     setPreferredSize(new Dimension(1280, 720));
     setLayout(new BorderLayout());
 
-    // สร้างเมนูโดยส่ง this ไป
-    menuPanel = new MainMenu(this);
-    add(menuPanel, BorderLayout.CENTER);
+    mainMenu = new MainMenu(this);
+    howToPlay = new HowToPlay(this);
+    playScene = new PlayScene(this);
+    gameOverScreen = new GameOverScreen(this, playScene);
+    add(BorderLayout.CENTER, mainMenu);
+  }
+
+  public void startPlayScene() {
+    playScene.startGame(); // เรียกเริ่มเกมจริง
   }
 
   public void setState(GameState state) {
     currentState = state;
-    removeAll(); // ลบ component เก่า
+    removeAll();
     revalidate();
     repaint();
 
     if (state == GameState.MENU) {
-      add(menuPanel, BorderLayout.CENTER);
+      add(BorderLayout.CENTER, mainMenu);
     } else if (state == GameState.PLAY) {
-      add(new JLabel("🎮 Playing Game..."), BorderLayout.CENTER);
+      add(BorderLayout.CENTER, playScene);
+      playScene.requestFocusInWindow();
     } else if (state == GameState.OPTIONS) {
-      add(new JLabel("⚙ Options Page"), BorderLayout.CENTER);
+      add(BorderLayout.CENTER, new JLabel("⚙ Options Page"));
+    } else if (state == GameState.HOW_TO_PLAY) {
+      add(BorderLayout.CENTER, howToPlay);
     } else if (state == GameState.GAMEOVER) {
-      add(new JLabel("💀 Game Over"), BorderLayout.CENTER);
+      gameOverScreen.updateScore();
+      add(BorderLayout.CENTER, gameOverScreen);
     }
   }
+
 
   public void startGame() {
     running = true;
@@ -46,10 +60,22 @@ public class GamePanel extends JPanel implements Runnable {
 
   @Override
   public void run() {
+    long lastTime = System.nanoTime();
+    double nsPerFrame = 16; // 60 FPS
+    double delta = 0;
+
     while (running) {
-      repaint();
+      long now = System.nanoTime();
+      delta += (now - lastTime) / nsPerFrame;
+      lastTime = now;
+
+      if (delta >= 1) {
+        repaint();
+        delta--;
+      }
+
       try {
-        Thread.sleep(16);
+        Thread.sleep(1); // Small sleep to prevent excessive CPU usage
       } catch (InterruptedException e) {
       }
     }

@@ -6,6 +6,16 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import javax.sound.sampled.*;
 
+enum ButtonType {
+  START,
+  OPTION,
+  BACK,
+  EXIT,
+  HOW_TO_PLAY,
+  PLAY_AGAIN,
+  BACK_TO_MENU
+}
+
 public class ImageButton extends JButton {
   private Image img;
   File soundFile = new File("../assets/sound/click2.wav");
@@ -15,26 +25,37 @@ public class ImageButton extends JButton {
   private final double normalScale = 0.95;
   private final double hoverScale = 1.0;
 
-  public ImageButton(String type) {
+  public ImageButton(ButtonType type) {
     String path;
-    if (type.equalsIgnoreCase("play") || type.equalsIgnoreCase("start")) {
-      path = "../assets/img/button-play.png";
-    } else if (type.equalsIgnoreCase("option")) {
-      path = "../assets/img/button-option.png";
-    } else if (type.equalsIgnoreCase("back")) {
-      path = "../assets/img/button-back.png";
-    } else if (type.equalsIgnoreCase("exit")) {
-      path = "../assets/img/button-exit.png";
-    } else if (type.equalsIgnoreCase("howtoplay")) {
-      path = "../assets/img/button-how-to-play.png";
-    }
-    else {
-      throw new IllegalArgumentException("Unknown button type: " + type);
+    switch (type) {
+      case START:
+        path = "../assets/img/button-play.png";
+        break;
+      case OPTION:
+        path = "../assets/img/button-option.png";
+        break;
+      case BACK:
+        path = "../assets/img/button-back.png";
+        break;
+      case EXIT:
+        path = "../assets/img/button-exit.png";
+        break;
+      case HOW_TO_PLAY:
+        path = "../assets/img/button-how-to-play.png";
+        break;
+      case PLAY_AGAIN:
+        path = "../assets/img/button-play-again.png";
+        break;
+      case BACK_TO_MENU:
+        path = "../assets/img/button-back-to-menu.png";
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown button type: " + type);
     }
 
     this.img = new ImageIcon(System.getProperty("user.dir") + File.separator + path).getImage();
 
-    // ตามขนาดรูป
+    // ตั้งขนาดปุ่มตามขนาดรูป
     Dimension size = new Dimension(img.getWidth(null), img.getHeight(null));
     setPreferredSize(size);
     setMinimumSize(size);
