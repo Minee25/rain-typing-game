@@ -25,6 +25,7 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
   private int missedWords = 0;
   private final int MAX_MISSED_WORDS = 5;
   private String currentInput = "";
+  private int delaySpawn = 2000;
   private Image bgImage = new ImageIcon(
       System.getProperty("user.dir") + File.separator + "../assets/img/background.jpg").getImage();
 
@@ -77,24 +78,49 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
       while ((line = br.readLine()) != null) {
         line = line.trim();
         if (!line.isEmpty()) {
-          for (String part : line.split("\\s+")) {
+          for (String part : line.split("\n")) {
             wordList.add(part.trim());
           }
         }
       }
-      System.out.println("✅ Loaded " + wordList.size() + " words from file");
+      System.out.println("Loaded " + wordList.size() + " words from file");
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
 
-  /** สุ่มคำจากรายการ */
+  /** สุ่มคำจากรายการ โดยไม่ให้ซ้ำกับคำที่อยู่บนจอ */
   private void spawnWord() {
     if (wordList.isEmpty())
       return;
-    String w = wordList.get(random.nextInt(wordList.size()));
+    if (words.size() >= wordList.size())
+      return; // ถ้าคำที่แสดงอยู่ครบทุกคำแล้วไม่ต้องสุ่มเพิ่ม
+
+    String w;
+    int tries = 0;
+    boolean duplicate;
+
+    do {
+      w = wordList.get(random.nextInt(wordList.size()));
+      duplicate = false;
+
+      // ตรวจว่าซ้ำหรือไม่
+      for (Word word : words) {
+        if (word.text.equals(w)) {
+          duplicate = true;
+          break;
+        }
+      }
+
+      tries++;
+    } while (duplicate && tries < 50);
+
+    if (duplicate)
+      return; // ถ้าหลังพยายามแล้วยังซ้ำ ให้ข้ามการสร้างคำ
+
     double randomSpeed = minSpeed + random.nextDouble() * (maxSpeed - minSpeed);
-    words.add(new Word(w, (int) random.nextDouble(Math.max(1, getWidth() - 100)), 0, randomSpeed));
+    int x = random.nextInt(Math.max(1, getWidth() - 100));
+    words.add(new Word(w, x, 0, randomSpeed));
   }
 
   /** ลูปเกมหลัก */
@@ -116,8 +142,8 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
         delta--;
       }
 
-      // สุ่มคำใหม่ทุก 1 วินาที
-      if (System.currentTimeMillis() - lastSpawnTime >= 1000) {
+      // สุ่มคำใหม่ทุก 5 วินาที
+      if (System.currentTimeMillis() - lastSpawnTime >= delaySpawn) {
         spawnWord();
         lastSpawnTime = System.currentTimeMillis();
       }
@@ -181,10 +207,17 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
   @Override
   public void keyTyped(KeyEvent e) {
     char c = e.getKeyChar();
-    if (Character.isLetterOrDigit(c) || Character.isAlphabetic(c)) {
+
+    // ยอมให้พิมพ์ได้ทุกอย่าง ยกเว้น control key (Enter, Backspace, Tab ฯลฯ)
+    if (!Character.isISOControl(c)) {
+      if (c == ' ' && currentInput.isEmpty()) {
+        return; // กัน space ตอนเริ่มต้น
+      }
       currentInput += c;
       checkWord();
-    } else if (c == '\b' && currentInput.length() > 0) {
+    }
+    // รองรับ backspace
+    else if (c == '\b' && currentInput.length() > 0) {
       currentInput = currentInput.substring(0, currentInput.length() - 1);
     }
   }

@@ -1,0 +1,8 @@
+int number = 10;
+double score = 50.0;
+String name = "java";
+boolean status = true;
+char grade = 'a';
+long id = 100000L;
+float rate = 3.5f;
+System.out.println("hello");

@@ -44,8 +44,8 @@ public class GamePanel extends JPanel implements Runnable {
     } else if (state == GameState.HOW_TO_PLAY) {
       add(BorderLayout.CENTER, howToPlay);
     } else if (state == GameState.GAMEOVER) {
-      gameOverScreen.updateScore();
       add(BorderLayout.CENTER, gameOverScreen);
+      gameOverScreen.updateScore();
     }
   }
 
