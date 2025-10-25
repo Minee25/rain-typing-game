@@ -8,6 +8,7 @@ public class RainTypingWindows extends JFrame {
     setSize(1920, 1080);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null);
+    setResizable(false);
 
     Image logo = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/logo64.png").getImage();
     setIconImage(logo);
