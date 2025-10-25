@@ -18,8 +18,9 @@ public class PlayScene extends JPanel implements KeyListener {
   String wordListPath = "../assets/words/english.txt";
   String soundWrongPath = "../assets/sound/wrong-effect.wav";
   String soundCorrectPath = "../assets/sound/bubble-effect.wav";
-  double minSpeed = 1.0;
-  double maxSpeed = 3.0;
+  double minSpeed = 2.0;
+  double maxSpeed = 5.0;
+  double delayWordSpawn = 1.5;
   int score = 0;
   int missedWords = 0;
   int maxMissedWords = 5;
@@ -36,7 +37,7 @@ public class PlayScene extends JPanel implements KeyListener {
 
     loadWordFromFile(wordListPath);
     gameTimer = new Timer(16, e -> gameLoop());
-    spawnTimer = new Timer(2000, e -> spawnWord());
+    spawnTimer = new Timer((int) (delayWordSpawn * 1000), e -> spawnWord());
   }
 
   public void startGame() {
