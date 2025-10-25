@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import javax.sound.sampled.*;
 
 enum ButtonType {
   PLAY,
@@ -17,7 +16,7 @@ enum ButtonType {
 
 public class ButtonImage extends JButton {
   private Image buttonImage;
-  File clickSoundPath = new File("../assets/sound/click2.wav");
+  String clickSoundPath = "../assets/sound/click2.wav";
 
   // ขนาดของปุ่มเมื่อ Hover
   private double scale = 0.95;
@@ -86,26 +85,8 @@ public class ButtonImage extends JButton {
 
     // เอฟเฟกต์เมื่อคลิก
     addActionListener(e -> {
-      playSound(clickSoundPath);
+      PlaySound.play(clickSoundPath);
     });
-  }
-
-  // เอฟเฟกต์เสียง
-  private void playSound(File soundFile) {
-    try {
-      AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundFile);
-      Clip clip = AudioSystem.getClip();
-      clip.open(audioInputStream);
-      clip.start();
-
-      clip.addLineListener(e -> {
-        if (e.getType() == LineEvent.Type.STOP) {
-          clip.close();
-        }
-      });
-    } catch (Exception error) {
-      error.printStackTrace();
-    }
   }
 
   @Override
