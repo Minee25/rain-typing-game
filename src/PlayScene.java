@@ -1,112 +1,111 @@
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineEvent;
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
+import java.io.*;
+import javax.sound.sampled.*;
 
-public class PlayScene extends JPanel implements KeyListener, Runnable {
+public class PlayScene extends JPanel implements KeyListener {
   private final GamePanel gamePanel;
-  private Thread gameThread;
-  private boolean running = false;
-  File soundWrongFile = new File("../assets/sound/wrong.wav");
-
-  private final ArrayList<Word> words = new ArrayList<>();
-  private String wordListPath = "../assets/words/english.txt";
   private final Random random = new Random();
-  private final Font thaiFont;
+  private final Timer gameTimer;
+  Timer spawnTimer;
+
   private final java.util.List<String> wordList = new ArrayList<>();
-  private double minSpeed = 1.0;
-  private double maxSpeed = 3.0;
-  private int score = 0;
-  private int missedWords = 0;
-  private final int MAX_MISSED_WORDS = 5;
-  private String currentInput = "";
-  private int delaySpawn = 2000;
-  private Image bgImage = new ImageIcon(
-      System.getProperty("user.dir") + File.separator + "../assets/img/background.jpg").getImage();
+  private final java.util.List<Word> words = new ArrayList<>();
+
+  String wordListPath = "../assets/words/english.txt";
+  String soundWrongPath = "../assets/sound/wrong-effect.wav";
+  String soundCorrectPath = "../assets/sound/bubble-effect.wav";
+  double minSpeed = 1.0;
+  double maxSpeed = 3.0;
+  int score = 0;
+  int missedWords = 0;
+  int maxMissedWords = 5;
+  String currentInput = "";
+
+  private Image backgroundImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/background.jpg").getImage();
 
   public PlayScene(GamePanel panel) {
     this.gamePanel = panel;
     setLayout(null);
     setFocusable(true);
     addKeyListener(this);
-
-    // เพื่อให้ TAB ส่ง KeyEvent ได้
     setFocusTraversalKeysEnabled(false);
 
-    // โหลดฟอนต์
-    Font f;
-    try {
-      f = Font.createFont(Font.TRUETYPE_FONT, new File("../assets/fonts/Itim-Regular.ttf")).deriveFont(Font.BOLD, 42);
-    } catch (Exception e) {
-      f = new Font("SansSerif", Font.BOLD, 42);
-    }
-    thaiFont = f;
-
-    loadWordsFromFile(wordListPath);
+    loadWordFromFile(wordListPath);
+    gameTimer = new Timer(16, e -> gameLoop());
+    spawnTimer = new Timer(2000, e -> spawnWord());
   }
 
-  /** เริ่มเกม */
   public void startGame() {
     words.clear();
     score = 0;
     missedWords = 0;
-    running = true;
-    gameThread = new Thread(this);
-    gameThread.start();
+    currentInput = "";
+    gameTimer.start();
+    spawnTimer.start();
   }
 
-  /** หยุดเกม (ตอน Game Over หรือออกจากฉาก) */
   public void stopGame() {
-    running = false;
+    gameTimer.stop();
+    spawnTimer.stop();
   }
 
-  /** โหลดคำจากไฟล์ครั้งเดียว */
-  private void loadWordsFromFile(String path) {
+  private void gameLoop() {
+    updateGame();
+    repaint();
+  }
+
+  // โหลดคำจากไฟล์
+  private void loadWordFromFile(String path) {
     File file = new File(path);
     if (!file.exists()) {
       System.err.println("File not found: " + file.getAbsolutePath());
       return;
     }
 
-    try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+    try {
+      // อ่านข้อความจากไฟล์
+      BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
       String line;
       while ((line = br.readLine()) != null) {
         line = line.trim();
+
         if (!line.isEmpty()) {
-          for (String part : line.split("\n")) {
-            wordList.add(part.trim());
-          }
+          wordList.add(line);
         }
       }
+
       System.out.println("Loaded " + wordList.size() + " words from file");
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception error) {
+      error.printStackTrace();
     }
   }
 
-  /** สุ่มคำจากรายการ โดยไม่ให้ซ้ำกับคำที่อยู่บนจอ */
+  // สุ่มคำจากรายการ
   private void spawnWord() {
-    if (wordList.isEmpty())
+    if (wordList.isEmpty()) {
       return;
-    if (words.size() >= wordList.size())
-      return; // ถ้าคำที่แสดงอยู่ครบทุกคำแล้วไม่ต้องสุ่มเพิ่ม
+    }
 
-    String w;
+    // ถ้าคำที่แสดงอยู่ครบทุกคำแล้วไม่ต้องสุ่มเพิ่ม
+    if (words.size() >= wordList.size()) {
+      return;
+    }
+
+    String word;
     int tries = 0;
     boolean duplicate;
 
+    // เช็คไม่ให้ซ้ำกับคำที่อยู่บนจอ
     do {
-      w = wordList.get(random.nextInt(wordList.size()));
+      word = wordList.get(random.nextInt(wordList.size()));
       duplicate = false;
 
-      // ตรวจว่าซ้ำหรือไม่
-      for (Word word : words) {
-        if (word.text.equals(w)) {
+      for (Word w : words) {
+        if (w.text.equals(word)) {
           duplicate = true;
           break;
         }
@@ -115,71 +114,26 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
       tries++;
     } while (duplicate && tries < 50);
 
-    if (duplicate)
-      return; // ถ้าหลังพยายามแล้วยังซ้ำ ให้ข้ามการสร้างคำ
+    // ถ้ายังมีคำซ้ำให้ข้ามการสร้างคำ
+    if (duplicate) {
+      return;
+    }
 
     double randomSpeed = minSpeed + random.nextDouble() * (maxSpeed - minSpeed);
     int x = random.nextInt(Math.max(1, getWidth() - 100));
-    words.add(new Word(w, x, 0, randomSpeed));
+    words.add(new Word(word, x, 0, randomSpeed));
   }
 
-  /** ลูปเกมหลัก */
-  @Override
-  public void run() {
-    long lastSpawnTime = System.currentTimeMillis();
-    long lastFrame = System.nanoTime();
-    double nsPerFrame = 16; // 60 FPS
-    double delta = 0;
-
-    while (running) {
-      long now = System.nanoTime();
-      delta += (now - lastFrame) / nsPerFrame;
-      lastFrame = now;
-
-      if (delta >= 1) {
-        updateGame();
-        repaint();
-        delta--;
-      }
-
-      // สุ่มคำใหม่ทุก 5 วินาที
-      if (System.currentTimeMillis() - lastSpawnTime >= delaySpawn) {
-        spawnWord();
-        lastSpawnTime = System.currentTimeMillis();
-      }
-
-      try {
-        Thread.sleep(16);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-    }
-  }
-
-  /** อัปเดตตำแหน่งคำ */
+  // อัปเดตตำแหน่งคำ
   private void updateGame() {
-    Iterator<Word> iterator = words.iterator();
-    while (iterator.hasNext()) {
-      Word word = iterator.next();
+    for (int i = words.size() - 1; i >= 0; i--) {
+      Word word = words.get(i);
       word.y += (int) word.speed;
       if (word.y > getHeight()) {
-        iterator.remove();
-        try {
-          AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundWrongFile);
-          Clip clip = AudioSystem.getClip();
-          clip.open(audioInputStream);
-          clip.start();
-
-          clip.addLineListener(e -> {
-            if (e.getType() == LineEvent.Type.STOP) {
-              clip.close();
-            }
-          });
-        } catch (Exception error) {
-          error.printStackTrace();
-        }
+        words.remove(i);
+        playSound(soundWrongPath);
         missedWords++;
-        if (missedWords >= MAX_MISSED_WORDS) {
+        if (missedWords >= maxMissedWords) {
           gameOver();
           return;
         }
@@ -187,102 +141,10 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
     }
   }
 
-  @Override
-  protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
-    g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
-
-    g.setFont(thaiFont);
-    g.setColor(Color.WHITE);
-    for (Word word : words) {
-      g.drawString(word.text, word.x, word.y);
-    }
-
-    g.setFont(thaiFont.deriveFont(Font.PLAIN, 48));
-    g.drawString("คะแนน: " + score, 20, 40);
-    g.drawString("พลาด: " + missedWords + "/" + MAX_MISSED_WORDS, 20, 90);
-    g.drawString(currentInput, 900, getHeight() - 50);
-  }
-
-  @Override
-  public void keyTyped(KeyEvent e) {
-    char c = e.getKeyChar();
-
-    // ยอมให้พิมพ์ได้ทุกอย่าง ยกเว้น control key (Enter, Backspace, Tab ฯลฯ)
-    if (!Character.isISOControl(c)) {
-      if (c == ' ' && currentInput.isEmpty()) {
-        return; // กัน space ตอนเริ่มต้น
-      }
-      currentInput += c;
-      checkWord();
-    }
-    // รองรับ backspace
-    else if (c == '\b' && currentInput.length() > 0) {
-      currentInput = currentInput.substring(0, currentInput.length() - 1);
-    }
-  }
-
-  private void checkWord() {
-    Iterator<Word> iterator = words.iterator();
-    while (iterator.hasNext()) {
-      Word word = iterator.next();
-      if (word.text.equals(currentInput)) {
-        iterator.remove();
-        score += 1;
-        playSound("../assets/sound/bubble-effect.wav");
-        currentInput = "";
-        break;
-      }
-    }
-  }
-
-  private void playSound(String path) {
-    try {
-      File soundFile = new File(path);
-      if (!soundFile.exists()) {
-        System.err.println("Sound not found: " + soundFile.getAbsolutePath());
-        return;
-      }
-      javax.sound.sampled.AudioInputStream audioIn = javax.sound.sampled.AudioSystem.getAudioInputStream(soundFile);
-      javax.sound.sampled.Clip clip = javax.sound.sampled.AudioSystem.getClip();
-      clip.open(audioIn);
-      clip.start();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
-  }
-
-  @Override
-  public void keyPressed(KeyEvent e) {
-    if (e.getKeyCode() == KeyEvent.VK_TAB) {
-      currentInput = "";
-      repaint();
-    }
-    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-      currentInput = "";
-      repaint();
-    }
-  }
-
-  @Override
-  public void keyReleased(KeyEvent e) {
-  }
-
   private void gameOver() {
-    running = false;
+    gameTimer.stop();
+    spawnTimer.stop();
     gamePanel.setState(GameState.GAMEOVER);
-  }
-
-  public void resetGame() {
-    score = 0;
-    missedWords = 0;
-    currentInput = "";
-    words.clear();
-    startGame(); // restart thread
-  }
-
-  public int getFinalScore() {
-    return score;
   }
 
   static class Word {
@@ -296,5 +158,85 @@ public class PlayScene extends JPanel implements KeyListener, Runnable {
       this.y = y;
       this.speed = s;
     }
+  }
+
+  @Override
+  public void keyTyped(KeyEvent e) {
+    char c = e.getKeyChar();
+    if (!Character.isISOControl(c)) {
+      if (c == ' ' && currentInput.isEmpty()) {
+        return;
+      }
+
+      currentInput += c;
+      checkWord();
+    } else if (c == '\b' && currentInput.length() > 0) {
+      currentInput = currentInput.substring(0, currentInput.length() - 1);
+    }
+  }
+
+  private void checkWord() {
+    for (int i = words.size() - 1; i >= 0; i--) {
+      Word word = words.get(i);
+      if (word.text.equals(currentInput)) {
+        words.remove(i);
+        score++;
+        playSound(soundCorrectPath);
+        currentInput = "";
+        break;
+      }
+    }
+  }
+
+  private void playSound(String path) {
+    try {
+      File soundFile = new File(path);
+      if (!soundFile.exists()) {
+        System.err.println("Sound not found: " + soundFile.getAbsolutePath());
+        return;
+      }
+      AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+      Clip clip = AudioSystem.getClip();
+      clip.open(audioIn);
+      clip.start();
+      clip.addLineListener(e -> {
+        if (e.getType() == LineEvent.Type.STOP)
+          clip.close();
+      });
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+  
+  public int getFinalScore() {
+    return score;
+  }
+
+  @Override
+  public void keyPressed(KeyEvent e) {
+    if (e.getKeyCode() == KeyEvent.VK_TAB || e.getKeyCode() == KeyEvent.VK_ENTER) {
+      currentInput = "";
+      repaint();
+    }
+  }
+
+  @Override
+  public void keyReleased(KeyEvent e) {
+  }
+
+  @Override
+  protected void paintComponent(Graphics g) {
+    super.paintComponent(g);
+    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+
+    g.setFont(ItimFont.itimFont(48));
+    g.setColor(Color.WHITE);
+    for (Word word : words) {
+      g.drawString(word.text, word.x, word.y);
+    }
+
+    g.drawString("คะแนน: " + score, 20, 40);
+    g.drawString("พลาด: " + missedWords + "/" + maxMissedWords, 20, 90);
+    g.drawString(currentInput, getWidth() / 2, getHeight() - 50);
   }
 }

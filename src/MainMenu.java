@@ -2,17 +2,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-class MainMenu extends JPanel {
+public class MainMenu extends JPanel {
   private GamePanel gamePanel;
+  ButtonImage playButton = new ButtonImage(ButtonType.PLAY);
+  ButtonImage howToPlay = new ButtonImage(ButtonType.HOW_TO_PLAY);
+  ButtonImage exitButton = new ButtonImage(ButtonType.EXIT);
 
-  ImageButton playButton = new ImageButton(ButtonType.START);
-  ImageButton howToPlay = new ImageButton(ButtonType.HOW_TO_PLAY);
-  ImageButton exitButton = new ImageButton(ButtonType.EXIT);
-
-  Image bgImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/background.jpg")
-      .getImage();
-  Image logoImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/banner.png")
-      .getImage();
+  Image backgroundImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/background.jpg").getImage();
+  Image logoImage = new ImageIcon(System.getProperty("user.dir") + File.separator + "../assets/img/banner.png").getImage();
   JLabel logoLabel = new JLabel(new ImageIcon(logoImage));
 
   public MainMenu(GamePanel panel) {
@@ -21,17 +18,17 @@ class MainMenu extends JPanel {
 
     playButton.addActionListener(e -> {
       gamePanel.setState(GameState.PLAY);
-      gamePanel.startPlayScene(); // เรียกเมธอดใหม่ใน GamePanel
     });
 
-    howToPlay.addActionListener(e -> gamePanel.setState(GameState.HOW_TO_PLAY));
+    howToPlay.addActionListener(e -> {
+      gamePanel.setState(GameState.HOW_TO_PLAY);
+    });
 
-    // Button to Exit
     exitButton.addActionListener(e -> {
       System.exit(0);
     });
 
-    // Center
+    // ปรับให้อยู่ตรงกลาง
     playButton.setAlignmentX(CENTER_ALIGNMENT);
     howToPlay.setAlignmentX(CENTER_ALIGNMENT);
     exitButton.setAlignmentX(CENTER_ALIGNMENT);
@@ -47,12 +44,11 @@ class MainMenu extends JPanel {
     add(Box.createRigidArea(new Dimension(0, 10)));
     add(exitButton);
     add(Box.createVerticalGlue());
-
   }
 
   @Override
   protected void paintComponent(Graphics g) {
     super.paintComponent(g);
-    g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
+    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
   }
 }

@@ -2,12 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import java.io.File;
 import javax.sound.sampled.*;
 
 enum ButtonType {
-  START,
+  PLAY,
   OPTION,
   BACK,
   EXIT,
@@ -16,19 +15,20 @@ enum ButtonType {
   BACK_TO_MENU
 }
 
-public class ImageButton extends JButton {
-  private Image img;
-  File soundFile = new File("../assets/sound/click2.wav");
+public class ButtonImage extends JButton {
+  private Image buttonImage;
+  File clickSoundPath = new File("../assets/sound/click2.wav");
 
-  // Scale hover effect
+  // ขนาดของปุ่มเมื่อ Hover
   private double scale = 0.95;
   private final double normalScale = 0.95;
   private final double hoverScale = 1.0;
 
-  public ImageButton(ButtonType type) {
+  public ButtonImage(ButtonType type) {
+    // ตำแหน่งรูปของภาพ
     String path;
     switch (type) {
-      case START:
+      case PLAY:
         path = "../assets/img/button-play.png";
         break;
       case OPTION:
@@ -53,10 +53,10 @@ public class ImageButton extends JButton {
         throw new IllegalArgumentException("Unknown button type: " + type);
     }
 
-    this.img = new ImageIcon(System.getProperty("user.dir") + File.separator + path).getImage();
+    this.buttonImage = new ImageIcon(System.getProperty("user.dir") + File.separator + path).getImage();
 
     // ตั้งขนาดปุ่มตามขนาดรูป
-    Dimension size = new Dimension(img.getWidth(null), img.getHeight(null));
+    Dimension size = new Dimension(buttonImage.getWidth(null), buttonImage.getHeight(null));
     setPreferredSize(size);
     setMinimumSize(size);
     setMaximumSize(size);
@@ -69,11 +69,11 @@ public class ImageButton extends JButton {
     setOpaque(false);
     setMargin(new Insets(0, 0, 0, 0));
 
-    // Hover effect
+    // เอฟเฟกต์เมื่อ Hover
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseEntered(MouseEvent e) {
-        scale = hoverScale; 
+        scale = hoverScale;
         repaint();
       }
 
@@ -84,11 +84,13 @@ public class ImageButton extends JButton {
       }
     });
 
+    // เอฟเฟกต์เมื่อคลิก
     addActionListener(e -> {
-      playSound(soundFile);
+      playSound(clickSoundPath);
     });
   }
 
+  // เอฟเฟกต์เสียง
   private void playSound(File soundFile) {
     try {
       AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundFile);
@@ -111,14 +113,14 @@ public class ImageButton extends JButton {
     super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g.create();
 
-    int newWidth = (int) (img.getWidth(null) * scale);
-    int newHeight = (int) (img.getHeight(null) * scale);
+    int newWidth = (int) (buttonImage.getWidth(null) * scale);
+    int newHeight = (int) (buttonImage.getHeight(null) * scale);
 
-    // Center
+    // ปรับให้อยู่ตรงกลาง
     int x = (getWidth() - newWidth) / 2;
     int y = (getHeight() - newHeight) / 2;
 
-    g2.drawImage(img, x, y, newWidth, newHeight, this);
+    g2.drawImage(buttonImage, x, y, newWidth, newHeight, this);
     g2.dispose();
   }
 }

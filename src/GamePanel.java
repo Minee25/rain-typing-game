@@ -2,13 +2,15 @@ import javax.swing.*;
 import java.awt.*;
 
 enum GameState {
-  MENU, PLAY, OPTIONS, HOW_TO_PLAY, GAMEOVER
+  MAIN_MENU,
+  PLAY,
+  HOW_TO_PLAY,
+  GAMEOVER
 }
 
-public class GamePanel extends JPanel implements Runnable {
-  private Thread gameThread;
-  private boolean running = false;
-  private GameState currentState = GameState.MENU;
+public class GamePanel extends JPanel {
+  private Timer timer;
+  private boolean gameRunning = false;
 
   private MainMenu mainMenu;
   private HowToPlay howToPlay;
@@ -16,65 +18,58 @@ public class GamePanel extends JPanel implements Runnable {
   private GameOverScreen gameOverScreen;
 
   public GamePanel() {
-    setPreferredSize(new Dimension(1280, 720));
     setLayout(new BorderLayout());
 
     mainMenu = new MainMenu(this);
     howToPlay = new HowToPlay(this);
     playScene = new PlayScene(this);
     gameOverScreen = new GameOverScreen(this, playScene);
-    add(BorderLayout.CENTER, mainMenu);
-  }
 
-  public void startPlayScene() {
-    playScene.startGame(); // เรียกเริ่มเกมจริง
+    // แสดงเมนูหลักในตอนแรก
+    add(BorderLayout.CENTER, mainMenu);
+
+    // Timer ให้เรียก repaint() ทุก 16 ms
+    timer = new Timer(16, e -> repaint());
   }
 
   public void setState(GameState state) {
-    currentState = state;
     removeAll();
+
+    switch (state) {
+      case MAIN_MENU:
+        add(BorderLayout.CENTER, mainMenu);
+        break;
+      case PLAY:
+        add(BorderLayout.CENTER, playScene);
+        playScene.requestFocusInWindow();
+        playScene.startGame();
+        break;
+      case HOW_TO_PLAY:
+        add(BorderLayout.CENTER, howToPlay);
+        break;
+      case GAMEOVER:
+        add(BorderLayout.CENTER, gameOverScreen);
+        gameOverScreen.updateScore();
+        break;
+      default:
+        break;
+    }
+
     revalidate();
     repaint();
-
-    if (state == GameState.MENU) {
-      add(BorderLayout.CENTER, mainMenu);
-    } else if (state == GameState.PLAY) {
-      add(BorderLayout.CENTER, playScene);
-      playScene.requestFocusInWindow();
-    } else if (state == GameState.HOW_TO_PLAY) {
-      add(BorderLayout.CENTER, howToPlay);
-    } else if (state == GameState.GAMEOVER) {
-      add(BorderLayout.CENTER, gameOverScreen);
-      gameOverScreen.updateScore();
-    }
   }
 
   public void startGame() {
-    running = true;
-    gameThread = new Thread(this);
-    gameThread.start();
+    if (!gameRunning) {
+      gameRunning = true;
+      timer.start();
+    }
   }
 
-  @Override
-  public void run() {
-    long lastTime = System.nanoTime();
-    double nsPerFrame = 16; // 60 FPS
-    double delta = 0;
-
-    while (running) {
-      long now = System.nanoTime();
-      delta += (now - lastTime) / nsPerFrame;
-      lastTime = now;
-
-      if (delta >= 1) {
-        repaint();
-        delta--;
-      }
-
-      try {
-        Thread.sleep(1); // Small sleep to prevent excessive CPU usage
-      } catch (InterruptedException e) {
-      }
+  public void stopGame() {
+    if (gameRunning) {
+      gameRunning = false;
+      timer.stop();
     }
   }
 }
