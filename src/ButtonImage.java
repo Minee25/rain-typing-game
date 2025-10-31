@@ -6,6 +6,9 @@ import java.io.File;
 
 enum ButtonType {
   PLAY,
+  MULTIPLAYER,
+  HOST,
+  JOIN,
   OPTION,
   BACK,
   EXIT,
@@ -29,6 +32,15 @@ public class ButtonImage extends JButton {
     switch (type) {
       case PLAY:
         path = "../assets/img/button-play.png";
+        break;
+      case MULTIPLAYER:
+        path = "../assets/img/button-multiplayer.png";
+        break;
+      case JOIN:
+        path = "../assets/img/button-join.png";
+        break;
+      case HOST:
+        path = "../assets/img/button-host.png";
         break;
       case OPTION:
         path = "../assets/img/button-option.png";

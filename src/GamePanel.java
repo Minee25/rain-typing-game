@@ -4,6 +4,9 @@ import java.awt.*;
 enum GameState {
   MAIN_MENU,
   PLAY,
+  MULTIPLAYER_MENU,
+  HOST_MENU,
+  JOIN_MENU,
   HOW_TO_PLAY,
   GAMEOVER
 }
@@ -15,6 +18,9 @@ public class GamePanel extends JPanel {
   private MainMenu mainMenu;
   private HowToPlay howToPlay;
   private PlayScene playScene;
+  private MultiplayerMenu multiplayerMenu;
+  private HostMenu hostMenu;
+  private JoinMenu joinMenu;
   private GameOverScreen gameOverScreen;
 
   public GamePanel() {
@@ -23,6 +29,9 @@ public class GamePanel extends JPanel {
     mainMenu = new MainMenu(this);
     howToPlay = new HowToPlay(this);
     playScene = new PlayScene(this);
+    multiplayerMenu = new MultiplayerMenu(this);
+    hostMenu = new HostMenu(this);
+    joinMenu = new JoinMenu(this);
     gameOverScreen = new GameOverScreen(this, playScene);
 
     // แสดงเมนูหลักในตอนแรก
@@ -43,6 +52,15 @@ public class GamePanel extends JPanel {
         add(BorderLayout.CENTER, playScene);
         playScene.requestFocusInWindow();
         playScene.startGame();
+        break;
+      case MULTIPLAYER_MENU:
+        add(BorderLayout.CENTER, multiplayerMenu); 
+        break;
+      case HOST_MENU:
+        add(BorderLayout.CENTER, hostMenu); 
+        break;
+      case JOIN_MENU:
+        add(BorderLayout.CENTER, joinMenu); 
         break;
       case HOW_TO_PLAY:
         add(BorderLayout.CENTER, howToPlay);

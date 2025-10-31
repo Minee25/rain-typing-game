@@ -5,6 +5,7 @@ import java.io.File;
 public class MainMenu extends JPanel {
   private GamePanel gamePanel;
   ButtonImage playButton = new ButtonImage(ButtonType.PLAY);
+  ButtonImage multiPlayerButton = new ButtonImage(ButtonType.MULTIPLAYER);
   ButtonImage howToPlay = new ButtonImage(ButtonType.HOW_TO_PLAY);
   ButtonImage exitButton = new ButtonImage(ButtonType.EXIT);
 
@@ -20,6 +21,10 @@ public class MainMenu extends JPanel {
       gamePanel.setState(GameState.PLAY);
     });
 
+    multiPlayerButton.addActionListener(e -> {
+      gamePanel.setState(GameState.MULTIPLAYER_MENU);
+    });
+
     howToPlay.addActionListener(e -> {
       gamePanel.setState(GameState.HOW_TO_PLAY);
     });
@@ -30,6 +35,7 @@ public class MainMenu extends JPanel {
 
     // ปรับให้อยู่ตรงกลาง
     playButton.setAlignmentX(CENTER_ALIGNMENT);
+    multiPlayerButton.setAlignmentX(CENTER_ALIGNMENT);
     howToPlay.setAlignmentX(CENTER_ALIGNMENT);
     exitButton.setAlignmentX(CENTER_ALIGNMENT);
     logoLabel.setAlignmentX(CENTER_ALIGNMENT);
@@ -39,6 +45,8 @@ public class MainMenu extends JPanel {
     add(Box.createRigidArea(new Dimension(0, 20)));
     add(Box.createVerticalGlue());
     add(playButton);
+    add(Box.createRigidArea(new Dimension(0, 10)));
+    add(multiPlayerButton);
     add(Box.createRigidArea(new Dimension(0, 10)));
     add(howToPlay);
     add(Box.createRigidArea(new Dimension(0, 10)));

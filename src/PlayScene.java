@@ -120,7 +120,10 @@ public class PlayScene extends JPanel implements KeyListener {
     }
 
     double randomSpeed = minSpeed + random.nextDouble() * (maxSpeed - minSpeed);
-    int x = random.nextInt(Math.max(1, getWidth() - 100));
+    int x = random.nextInt(getWidth() - 100);
+    if (x < 1) {
+      x = 1;
+    }
     words.add(new Word(word, x, 0, randomSpeed));
   }
 
